@@ -3,20 +3,35 @@
 /*
  * GCM : Google Cloud Messaging
  * info : http://developer.android.com/google/gcm/index.html
+ * Description : Simple Android Push Notification class with curl
  */
+
+namespace KS;
 
 class GCM {
 
-  private $ApiKey = null;
+  private $APIKey = null;
   
   private $timeout = 60;
 
-  function __construct($ApiKey) {
-    $this->ApiKey = $ApiKey;
+  function __construct($APIKey) {
+    $this->APIKey = $APIKey;
   }
 
-  public function setApiKey($ApiKey) {
-    $this->ApiKey = $ApiKey;
+  public function setAPIKey($APIKey) {
+    $this->APIKey = $APIKey;
+  }
+  
+  public function getAPIKey() {
+    return $this->APIKey;
+  }
+  
+  public function setTimeOut($timeout) {
+    $this->timeout = $timeout;
+  }
+  
+  public function getTimeOut() {
+    return $this->timeout;
   }
 
   public function send($token = null, $data = null) {
@@ -25,18 +40,25 @@ class GCM {
       return false;
     }
     
+    $tokens = array();
+    if (is_array($token) == true) {
+      $tokens = $token;
+    } else {
+      $tokens = array($token);
+    }
+    
     $ch = curl_init();
     $opts[CURLOPT_URL] = true;
     $opts[CURLOPT_URL] = 'https://android.googleapis.com/gcm/send';
     $opts[CURLOPT_RETURNTRANSFER] = 1;
     $opts[CURLOPT_CONNECTTIMEOUT] = $this->timeout;
     $opts[CURLOPT_HTTPHEADER] = array(
-        'Authorization: key='.$this->ApiKey,
+        'Authorization: key='.$this->APIKey,
         'Content-Type: application/json'
     );
     
     $payload = array(
-        'registration_ids' => array($token),
+        'registration_ids' => $tokens,
         'data' => $data
     );
     
@@ -46,6 +68,7 @@ class GCM {
     $result = curl_exec ($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close ($ch);
+    
     
     //TODO: Throw Exception
     if ($status == 200) {
@@ -79,4 +102,3 @@ class GCM {
   }
 
 }
-
